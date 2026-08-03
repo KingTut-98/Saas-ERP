@@ -8,7 +8,14 @@
     "color": "#0F172A",
     "evaluationVersion": 2,
     "applicationVersion": 2,
-    "isPublic": false
+    "isPublic": false,
+    "pages": [
+      {
+        "id": "ETA E-Invoicing & Compliance Portal",
+        "name": "ETA E-Invoicing & Compliance Portal",
+        "isDefault": true
+      }
+    ]
   },
   "unpublishedCustomJSLibs": [],
   "unpublishedPageList": [
