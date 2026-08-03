@@ -27,6 +27,60 @@ export const typeDefs = `#graphql
     tierLevel: String!
   }
 
+  type WalletTransaction {
+    id: ID!
+    internalRef: String!
+    walletId: ID!
+    amountEgp: Float!
+    channel: String!
+    referenceNumber: String!
+    status: String!
+    failureReason: String
+    createdAt: String!
+    cbeImpact: String
+    feeEgp: Float
+    vatEgp: Float
+    totalEgp: Float
+  }
+
+  type AccountPreferences {
+    legalName: String!
+    tradeName: String!
+    trn: String!
+    commercialRegistryNumber: String!
+    email: String!
+    phone: String!
+    tierLevel: String!
+    defaultVatRate: Float!
+    currency: String!
+    language: String!
+    themeColor: String!
+    cbeAlertsEnabled: Boolean!
+    etaFailAlertsEnabled: Boolean!
+    smsReceiptsEnabled: Boolean!
+  }
+
+  type IntegrationConfig {
+    etaEnvironment: String!
+    etaClientId: String!
+    etaClientSecret: String!
+    etaCertStatus: String!
+    etaCertExpiry: String!
+    appsmithConnected: Boolean!
+    odooConnected: Boolean!
+    quickbooksConnected: Boolean!
+    webhookUrl: String!
+    apiKey: String!
+  }
+
+  type ConnectionResult {
+    success: Boolean!
+    latencyMs: Int!
+    environment: String!
+    message: String!
+    timestamp: String!
+  }
+
   type TRNValidationResult {
     trn: String!
     isValid: Boolean!
@@ -95,6 +149,10 @@ export const typeDefs = `#graphql
     validateTRN(trn: String!): TRNValidationResult!
     getInvoiceFeed: [Invoice!]!
     getInvoiceById(id: String!): Invoice
+    getAccountPreferences: AccountPreferences!
+    getIntegrationConfig: IntegrationConfig!
+    getWalletTransactions: [WalletTransaction!]!
+    getTransactionById(id: String!): WalletTransaction
   }
 
   type Mutation {
@@ -109,6 +167,28 @@ export const typeDefs = `#graphql
       invoiceId: String!
       format: String
     ): ETASubmissionResult!
+
+    updateAccountPreferences(
+      legalName: String
+      email: String
+      phone: String
+      language: String
+      themeColor: String
+      cbeAlertsEnabled: Boolean
+      etaFailAlertsEnabled: Boolean
+      smsReceiptsEnabled: Boolean
+    ): AccountPreferences!
+
+    updateIntegrationConfig(
+      etaEnvironment: String
+      etaClientId: String
+      etaClientSecret: String
+      webhookUrl: String
+      odooConnected: Boolean
+      quickbooksConnected: Boolean
+    ): IntegrationConfig!
+
+    testEtaConnection: ConnectionResult!
   }
 `;
 
@@ -123,6 +203,99 @@ let mockWallet = {
   dailyLimitCapEgp: 60000.00,
   monthlyLimitCapEgp: 200000.00,
   tierLevel: 'TIER_1_INDIVIDUAL'
+};
+
+let mockTransactions = [
+  {
+    id: 'txn-101',
+    internalRef: 'TXN-2026-001',
+    walletId: 'w1111111-2222-3333-4444-555555555555',
+    amountEgp: 20000.00,
+    channel: 'InstaPay Egypt',
+    referenceNumber: 'INSTA-99410-EG',
+    status: 'COMPLETED',
+    failureReason: null,
+    createdAt: '2026-08-03T11:30:00.000Z',
+    cbeImpact: 'Updated Daily Used: 20,000 / 60,000 EGP',
+    feeEgp: 0.00,
+    vatEgp: 0.00,
+    totalEgp: 20000.00
+  },
+  {
+    id: 'txn-102',
+    internalRef: 'TXN-2026-002',
+    walletId: 'w1111111-2222-3333-4444-555555555555',
+    amountEgp: 25000.00,
+    channel: 'Fawry Cash Code',
+    referenceNumber: 'FAWRY-48192-EG',
+    status: 'COMPLETED',
+    failureReason: null,
+    createdAt: '2026-08-03T13:15:00.000Z',
+    cbeImpact: 'Updated Daily Used: 45,000 / 60,000 EGP',
+    feeEgp: 100.00,
+    vatEgp: 14.00,
+    totalEgp: 25114.00
+  },
+  {
+    id: 'txn-103',
+    internalRef: 'TXN-2026-003',
+    walletId: 'w1111111-2222-3333-4444-555555555555',
+    amountEgp: 25000.00,
+    channel: 'Credit / Debit Card',
+    referenceNumber: 'CARD-88192-EG',
+    status: 'EXCEEDED_LIMIT',
+    failureReason: 'You attempted to deposit 25,000.00 EGP, but your remaining daily allowance is 15,000.00 EGP under Tier 1 rules.',
+    createdAt: '2026-08-03T14:45:00.000Z',
+    cbeImpact: 'Rejected - Exceeds 60,000 EGP Daily Cap',
+    feeEgp: 0.00,
+    vatEgp: 0.00,
+    totalEgp: 25000.00
+  },
+  {
+    id: 'txn-104',
+    internalRef: 'TXN-2026-004',
+    walletId: 'w1111111-2222-3333-4444-555555555555',
+    amountEgp: 10000.00,
+    channel: 'Bank Wire Transfer',
+    referenceNumber: 'BANK-CIB-90182',
+    status: 'COMPLETED',
+    failureReason: null,
+    createdAt: '2026-08-02T16:00:00.000Z',
+    cbeImpact: 'Updated Monthly Used: 110,000 / 200,000 EGP',
+    feeEgp: 50.00,
+    vatEgp: 7.00,
+    totalEgp: 10057.00
+  }
+];
+
+let mockPreferences = {
+  legalName: 'Nexus Egyptian Trading Co.',
+  tradeName: 'Nexus Wallet',
+  trn: '123-456-789',
+  commercialRegistryNumber: 'CR-98421-EG',
+  email: 'finance@nexus-wallet.eg',
+  phone: '+201001234567',
+  tierLevel: 'Tier 1 · Individual',
+  defaultVatRate: 0.14,
+  currency: 'EGP',
+  language: 'English',
+  themeColor: '#1E293B',
+  cbeAlertsEnabled: true,
+  etaFailAlertsEnabled: true,
+  smsReceiptsEnabled: false
+};
+
+let mockIntegrations = {
+  etaEnvironment: 'Pre-Production Sandbox',
+  etaClientId: 'eta_client_sec_9984102',
+  etaClientSecret: '••••••••••••••••••••••••',
+  etaCertStatus: 'Verified & Active (CAdES-BES / Soft Cert)',
+  etaCertExpiry: '14 Dec 2027',
+  appsmithConnected: true,
+  odooConnected: true,
+  quickbooksConnected: false,
+  webhookUrl: 'https://api.nexus-wallet.eg/webhooks/eta/v1',
+  apiKey: 'nx_live_key_9841a0e7f229'
 };
 
 let mockInvoices: any[] = [
@@ -236,6 +409,16 @@ export const resolvers = {
 
     getInvoiceById: (_: any, { id }: { id: string }) => {
       return mockInvoices.find(inv => inv.id === id || inv.internalId === id) || null;
+    },
+
+    getAccountPreferences: () => mockPreferences,
+
+    getIntegrationConfig: () => mockIntegrations,
+
+    getWalletTransactions: () => mockTransactions,
+
+    getTransactionById: (_: any, { id }: { id: string }) => {
+      return mockTransactions.find(t => t.id === id || t.internalRef === id) || null;
     }
   },
 
@@ -244,15 +427,32 @@ export const resolvers = {
       const remainingDaily = mockWallet.dailyLimitCapEgp - mockWallet.dailyUsedEgp;
       
       if (amount > remainingDaily) {
+        const txn = {
+          id: `txn-${Date.now()}`,
+          internalRef: `TXN-2026-${mockTransactions.length + 1}`,
+          walletId: mockWallet.id,
+          amountEgp: amount,
+          channel: channel || 'Card Gateway',
+          referenceNumber: referenceNumber || `REF-${Date.now()}`,
+          status: 'EXCEEDED_LIMIT',
+          failureReason: `You attempted to deposit ${amount.toLocaleString('en-US', {minimumFractionDigits: 2})} EGP, but your remaining daily allowance is ${remainingDaily.toLocaleString('en-US', {minimumFractionDigits: 2})} EGP under Tier 1 rules.`,
+          createdAt: new Date().toISOString(),
+          cbeImpact: 'Rejected - Exceeds 60,000 EGP Daily Cap',
+          feeEgp: 0.00,
+          vatEgp: 0.00,
+          totalEgp: amount
+        };
+        mockTransactions.unshift(txn);
+
         return {
           success: false,
           code: 'DAILY_LIMIT_EXCEEDED',
-          transactionId: `txn-${Date.now()}`,
+          transactionId: txn.id,
           attemptedAmount: amount,
           remainingDailyAllowance: remainingDaily,
           dailyCap: mockWallet.dailyLimitCapEgp,
           tierLevel: mockWallet.tierLevel,
-          message: `You attempted to deposit ${amount.toLocaleString('en-US', {minimumFractionDigits: 2})} EGP, but your remaining daily allowance is ${remainingDaily.toLocaleString('en-US', {minimumFractionDigits: 2})} EGP under Tier 1 rules.`
+          message: txn.failureReason
         };
       }
 
@@ -261,9 +461,26 @@ export const resolvers = {
       mockWallet.dailyUsedEgp += amount;
       mockWallet.monthlyUsedEgp += amount;
 
+      const txn = {
+        id: `txn-${Date.now()}`,
+        internalRef: `TXN-2026-00${mockTransactions.length + 1}`,
+        walletId: mockWallet.id,
+        amountEgp: amount,
+        channel: channel || 'InstaPay Egypt',
+        referenceNumber: referenceNumber || `REF-${Date.now()}`,
+        status: 'COMPLETED',
+        failureReason: null,
+        createdAt: new Date().toISOString(),
+        cbeImpact: `Updated Daily Used: ${mockWallet.dailyUsedEgp.toLocaleString()} / 60,000 EGP`,
+        feeEgp: 0.00,
+        vatEgp: 0.00,
+        totalEgp: amount
+      };
+      mockTransactions.unshift(txn);
+
       return {
         success: true,
-        transactionId: `txn-${Date.now()}`,
+        transactionId: txn.id,
         newBalance: mockWallet.balanceEgp,
         dailyUsedEgp: mockWallet.dailyUsedEgp,
         monthlyUsedEgp: mockWallet.monthlyUsedEgp,
@@ -281,7 +498,7 @@ export const resolvers = {
       const result = await client.submitDocument({
         internalId: invoice.internalId,
         issuerTrn: invoice.issuerTrn,
-        issuerName: 'Nexus Egyptian Trading Co.',
+        issuerName: mockPreferences.legalName,
         receiverTrn: invoice.receiverTrn,
         receiverName: invoice.receiverName,
         documentType: invoice.documentType || 'B2C_RECEIPT',
@@ -309,6 +526,26 @@ export const resolvers = {
       }
 
       return result;
+    },
+
+    updateAccountPreferences: (_: any, args: any) => {
+      mockPreferences = { ...mockPreferences, ...args };
+      return mockPreferences;
+    },
+
+    updateIntegrationConfig: (_: any, args: any) => {
+      mockIntegrations = { ...mockIntegrations, ...args };
+      return mockIntegrations;
+    },
+
+    testEtaConnection: () => {
+      return {
+        success: true,
+        latencyMs: 42,
+        environment: mockIntegrations.etaEnvironment,
+        message: 'Successfully authenticated & connected to Egyptian Tax Authority (ETA) e-Invoicing API Gateway.',
+        timestamp: new Date().toISOString()
+      };
     }
   }
 };
