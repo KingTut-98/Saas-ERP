@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ETA E-Invoicing & Compliance SaaS MVP Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="container">
+    <!-- Top Navigation & View Switcher -->
+    <header class="nav-header">
+      <div class="logo-group">
+        <span class="logo-icon">🇪🇬</span>
+        <div>
+          <h1 class="logo-text">ETA Compliance SaaS</h1>
+          <p style="font-size: 0.75rem; color: #64748b;">Egyptian Tax Authority E-Invoicing & E-Receipt v1.0</p>
+        </div>
+      </div>
+
+      <nav class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('wallet')">💳 Nexus Wallet</button>
+        <button class="tab-btn" onclick="switchTab('limit-modal')">⚠️ Limit Exceeded Alert</button>
+        <button class="tab-btn" onclick="switchTab('receipt')">📄 Verified E-Receipt</button>
+        <button class="tab-btn" onclick="switchTab('feed')">📊 Appsmith Feed & TRN</button>
+      </nav>
+    </header>
+
+    <!-- VIEW 1: Nexus Wallet Dashboard (Page 1 Screenshot Alignment) -->
+    <section id="view-wallet" class="view-section active">
+      <div class="nexus-card">
+        <div class="nexus-header">
+          <h2 class="nexus-title">Nexus Wallet</h2>
+          <span class="badge-tier">Tier 1 · Verified</span>
+        </div>
+
+        <div class="balance-row">
+          <div>
+            <div class="balance-label">AVAILABLE BALANCE</div>
+            <div>
+              <span class="balance-amount" id="val-balance">124,500.00</span>
+              <span class="balance-currency">EGP</span>
+            </div>
+          </div>
+          <button class="btn-add-funds" onclick="promptDeposit()">+ Add Funds</button>
+        </div>
+      </div>
+
+      <!-- Daily Limit Meter Card -->
+      <div class="nexus-card">
+        <div class="meter-header">
+          <span>Daily Limit</span>
+          <span style="color: #64748b;" id="val-daily-percent">75%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill fill-daily" id="bar-daily" style="width: 75%;"></div>
+        </div>
+        <div class="meter-used" id="val-daily-text">45,000 / 60,000 EGP used</div>
+        <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.5rem;">Resets in 3h 45m</div>
+      </div>
+
+      <!-- Monthly Limit Meter Card -->
+      <div class="nexus-card">
+        <div class="meter-header">
+          <span>Monthly Limit</span>
+          <span style="color: #64748b;" id="val-monthly-percent">55%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill fill-monthly" id="bar-monthly" style="width: 55%;"></div>
+        </div>
+        <div class="meter-used" id="val-monthly-text">110,000 / 200,000 EGP used</div>
+      </div>
+
+      <!-- Approaching Tier 1 Warning Banner -->
+      <div class="warning-box">
+        <div class="warning-icon">⚠️</div>
+        <div class="warning-content">
+          <h4>Approaching Tier 1 limit</h4>
+          <p>Upgrade to Tier 2 for up to 500,000 EGP/day allowance.</p>
+          <button class="btn-upgrade-outline" onclick="switchTab('limit-modal')">Upgrade</button>
+        </div>
+      </div>
+
+      <!-- Deposit Channels Grid -->
+      <div class="channels-title">Deposit Channels</div>
+      <div class="channels-grid">
+        <div class="channel-card" onclick="openDepositChannel('InstaPay')">
+          <span class="badge-recommended">Recommended</span>
+          <div class="channel-name">InstaPay</div>
+          <div class="channel-sub">Instant · No fee</div>
+        </div>
+
+        <div class="channel-card" onclick="openDepositChannel('Bank Wire')">
+          <div class="channel-name">Bank Wire</div>
+          <div class="channel-sub">1-2 hours · IBAN transfer</div>
+        </div>
+
+        <div class="channel-card" onclick="openDepositChannel('Fawry')">
+          <div class="channel-name">Fawry Cash Code</div>
+          <div class="channel-sub">Pay over the counter · 6-digit code</div>
+        </div>
+
+        <div class="channel-card" onclick="openDepositChannel('Credit / Debit Card')">
+          <div class="channel-name">Credit / Debit Card</div>
+          <div class="channel-sub">Instant · 2.25% fee</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: Daily Deposit Limit Exceeded Modal (Page 2 Screenshot Alignment) -->
+    <section id="view-limit-modal" class="view-section">
+      <div class="modal-overlay">
+        <div class="limit-modal-box">
+          <div class="modal-header-alert">
+            <div class="alert-circle">!</div>
+            <h3 class="alert-title">Daily Deposit Limit Exceeded</h3>
+          </div>
+
+          <div class="limit-message-box" id="limit-modal-msg">
+            You attempted to deposit 25,000.00 EGP, but your remaining daily allowance is 15,000.00 EGP under Tier 1 rules.
+          </div>
+
+          <div class="tier-compare-grid">
+            <div class="tier-box">
+              <div class="tier-tag">TIER 1 · INDIVIDUAL</div>
+              <div class="tier-amount">60,000 EGP/day</div>
+            </div>
+
+            <div class="tier-box selected">
+              <div class="tier-tag">TIER 2 · SME BUSINESS</div>
+              <div class="tier-amount">500,000 EGP/day</div>
+              <div class="tier-note">Requires Commercial Registry & Tax ID</div>
+            </div>
+          </div>
+
+          <div class="action-btn-stack">
+            <button class="btn-primary-action" onclick="upgradeToTier2()">Upgrade to Tier 2</button>
+            <button class="btn-secondary-action" onclick="adjustAmount(15000)">Adjust Amount to 15,000 EGP</button>
+            <button class="btn-link-action" onclick="switchTab('wallet')">Cancel Transaction</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: ETA Cleared & Verified E-Receipt (Page 3 Screenshot Alignment) -->
+    <section id="view-receipt" class="view-section">
+      <div class="receipt-card">
+        <div class="receipt-top">
+          <div class="verified-badge-group">
+            <div class="check-icon-circle">✓</div>
+            <div>
+              <h3 style="font-size: 1.1rem; font-weight: 800;">ETA Cleared & Verified</h3>
+              <p style="font-size: 0.8rem; color: #64748b;">Official Tax Clearance — Egyptian Tax Authority</p>
+            </div>
+          </div>
+          <span class="receipt-type-pill">E-Receipt / B2C</span>
+        </div>
+
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">TAX REGISTRATION NUMBER (TRN)</div>
+            <div class="meta-val">123-456-789</div>
+          </div>
+
+          <div class="meta-item">
+            <div class="meta-label">ETA UUID</div>
+            <div class="meta-val" style="font-size: 0.85rem;">E3A8F92D-811C-4B2E-901B-74D3F9A08123</div>
+          </div>
+
+          <div class="meta-item">
+            <div class="meta-label">ISSUE DATE</div>
+            <div class="meta-val">03 Aug 2026, 02:11 PM</div>
+          </div>
+        </div>
+
+        <table class="receipt-table">
+          <thead>
+            <tr>
+              <th>DESCRIPTION</th>
+              <th style="text-align: right;">EGP</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Wallet Deposit Processing Fee</td>
+              <td style="text-align: right; font-weight: 600;">100.00</td>
+            </tr>
+            <tr>
+              <td>Standard VAT (14%)</td>
+              <td style="text-align: right; font-weight: 600;">14.00</td>
+            </tr>
+            <tr class="total-row">
+              <td>Total Amount Paid</td>
+              <td style="text-align: right; font-weight: 800;">114.00</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="qr-section">
+          <div class="qr-box">
+            <img id="receipt-qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://invoicing.eta.gov.eg/receipts/search/E3A8F92D-811C-4B2E-901B-74D3F9A08123" alt="ETA Verification QR Code">
+          </div>
+          <div class="qr-text">
+            Scan to verify on official ETA portal
+          </div>
+        </div>
+
+        <div class="receipt-actions">
+          <button class="btn-receipt-primary" onclick="downloadPdf()">Download PDF Receipt</button>
+          <button class="btn-receipt-secondary" onclick="emailReceipt()">Email Receipt</button>
+          <button class="btn-receipt-secondary" onclick="openEtaPortal()">View in ETA Portal</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 4: Appsmith Feed & Live TRN Validator -->
+    <section id="view-feed" class="view-section">
+      <div class="nexus-card">
+        <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">🔍 Taxpayer TRN Lookup & Validator (الرقم الضريبي)</h3>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+          <input type="text" id="trn-input" placeholder="e.g., 123456789 or 123-456-789" style="flex: 1; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 6px;" value="123-456-789">
+          <button class="btn-add-funds" style="background: #2563eb;" onclick="validateTRN()">Verify TRN</button>
+        </div>
+        <div id="trn-result-msg" style="margin-top: 1rem; font-weight: 700; color: #059669;">
+          Validation Status: ✅ Valid 9-digit Egyptian TRN format
+        </div>
+      </div>
+
+      <div class="feed-card">
+        <div class="feed-header">
+          <h3 style="font-size: 1.1rem; font-weight: 700;">📄 ETA v1.0 Invoice Submission Status Feed</h3>
+          <button class="tab-btn" onclick="fetchFeed()">🔄 Refresh Feed</button>
+        </div>
+
+        <table class="feed-table">
+          <thead>
+            <tr>
+              <th>Internal Ref</th>
+              <th>Receiver Name</th>
+              <th>Receiver TRN</th>
+              <th>Net (EGP)</th>
+              <th>14% VAT</th>
+              <th>Total (EGP)</th>
+              <th>ETA Status</th>
+              <th>Verification Link</th>
+            </tr>
+          </thead>
+          <tbody id="feed-tbody">
+            <tr>
+              <td style="font-weight: 700;">INV-2026-001</td>
+              <td>Wallet Processing Fee Customer</td>
+              <td>123-456-789</td>
+              <td>100.00</td>
+              <td>14.00</td>
+              <td style="font-weight: 700;">114.00</td>
+              <td><span class="status-badge status-valid">VALID</span></td>
+              <td><a href="https://invoicing.eta.gov.eg/receipts/search/E3A8F92D-811C-4B2E-901B-74D3F9A08123" target="_blank" style="color: #2563eb;">Verify Link</a></td>
+            </tr>
+            <tr>
+              <td style="font-weight: 700;">INV-2026-002</td>
+              <td>Cairo Retail Supplying Co.</td>
+              <td>987654321</td>
+              <td>10,000.00</td>
+              <td>1,400.00</td>
+              <td style="font-weight: 700;">11,400.00</td>
+              <td><span class="status-badge status-valid">VALID</span></td>
+              <td><a href="https://invoicing.eta.gov.eg/receipts/search/ETA-3F9A-412C" target="_blank" style="color: #2563eb;">Verify Link</a></td>
+            </tr>
+            <tr>
+              <td style="font-weight: 700;">INV-2026-003</td>
+              <td>Alexandria Logistics Ltd</td>
+              <td>456789123</td>
+              <td>25,000.00</td>
+              <td>3,500.00</td>
+              <td style="font-weight: 700;">28,500.00</td>
+              <td><span class="status-badge status-queued">QUEUED</span></td>
+              <td>-</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
