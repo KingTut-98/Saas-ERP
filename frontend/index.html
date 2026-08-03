@@ -21,9 +21,12 @@
 
       <nav class="nav-tabs">
         <button class="tab-btn active" onclick="switchTab('wallet')">💳 Nexus Wallet</button>
-        <button class="tab-btn" onclick="switchTab('limit-modal')">⚠️ Limit Exceeded Alert</button>
+        <button class="tab-btn" onclick="switchTab('transactions')">📋 Line Item Transactions</button>
+        <button class="tab-btn" onclick="switchTab('limit-modal')">⚠️ Limit Alert</button>
         <button class="tab-btn" onclick="switchTab('receipt')">📄 Verified E-Receipt</button>
-        <button class="tab-btn" onclick="switchTab('feed')">📊 Appsmith Feed & TRN</button>
+        <button class="tab-btn" onclick="switchTab('feed')">📊 Appsmith Feed</button>
+        <button class="tab-btn" onclick="switchTab('account')">⚙️ Account & Prefs</button>
+        <button class="tab-btn" onclick="switchTab('integrations')">🔌 Integrations</button>
       </nav>
     </header>
 
@@ -32,7 +35,7 @@
       <div class="nexus-card">
         <div class="nexus-header">
           <h2 class="nexus-title">Nexus Wallet</h2>
-          <span class="badge-tier">Tier 1 · Verified</span>
+          <span class="badge-tier" id="wallet-tier-badge">Tier 1 · Verified</span>
         </div>
 
         <div class="balance-row">
@@ -105,6 +108,74 @@
           <div class="channel-name">Credit / Debit Card</div>
           <div class="channel-sub">Instant · 2.25% fee</div>
         </div>
+      </div>
+    </section>
+
+    <!-- NEW VIEW: Clickable Line Item Transactions Table -->
+    <section id="view-transactions" class="view-section">
+      <div class="feed-card">
+        <div class="feed-header">
+          <div>
+            <h2 style="font-size: 1.25rem; font-weight: 800;">📋 Wallet Line Item Transactions</h2>
+            <p style="font-size: 0.8rem; color: #64748b;">Click on any row to view complete transaction, CBE limit impact & tax breakdown details.</p>
+          </div>
+          <button class="tab-btn" onclick="fetchTransactions()">🔄 Refresh List</button>
+        </div>
+
+        <table class="feed-table">
+          <thead>
+            <tr>
+              <th>Ref ID</th>
+              <th>Date & Time</th>
+              <th>Channel</th>
+              <th>Reference No</th>
+              <th>Amount (EGP)</th>
+              <th>CBE Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="txn-tbody">
+            <tr class="txn-row-clickable" onclick="openTxnDetailModal('TXN-2026-001')">
+              <td style="font-weight: 800; font-family: var(--font-mono);">TXN-2026-001</td>
+              <td>03 Aug 2026, 11:30 AM</td>
+              <td>InstaPay Egypt</td>
+              <td style="font-family: var(--font-mono);">INSTA-99410-EG</td>
+              <td style="font-weight: 700;">20,000.00</td>
+              <td><span class="status-badge status-completed">COMPLETED</span></td>
+              <td><button class="btn-secondary-action" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;">View Details 🔍</button></td>
+            </tr>
+
+            <tr class="txn-row-clickable" onclick="openTxnDetailModal('TXN-2026-002')">
+              <td style="font-weight: 800; font-family: var(--font-mono);">TXN-2026-002</td>
+              <td>03 Aug 2026, 01:15 PM</td>
+              <td>Fawry Cash Code</td>
+              <td style="font-family: var(--font-mono);">FAWRY-48192-EG</td>
+              <td style="font-weight: 700;">25,000.00</td>
+              <td><span class="status-badge status-completed">COMPLETED</span></td>
+              <td><button class="btn-secondary-action" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;">View Details 🔍</button></td>
+            </tr>
+
+            <tr class="txn-row-clickable" onclick="openTxnDetailModal('TXN-2026-003')">
+              <td style="font-weight: 800; font-family: var(--font-mono);">TXN-2026-003</td>
+              <td>03 Aug 2026, 02:45 PM</td>
+              <td>Credit / Debit Card</td>
+              <td style="font-family: var(--font-mono);">CARD-88192-EG</td>
+              <td style="font-weight: 700; color: #dc2626;">25,000.00</td>
+              <td><span class="status-badge status-exceeded">EXCEEDED_LIMIT</span></td>
+              <td><button class="btn-secondary-action" style="padding: 0.25rem 0.6rem; font-size: 0.75rem; color: #dc2626;">View Details ⚠️</button></td>
+            </tr>
+
+            <tr class="txn-row-clickable" onclick="openTxnDetailModal('TXN-2026-004')">
+              <td style="font-weight: 800; font-family: var(--font-mono);">TXN-2026-004</td>
+              <td>02 Aug 2026, 04:00 PM</td>
+              <td>Bank Wire Transfer</td>
+              <td style="font-family: var(--font-mono);">BANK-CIB-90182</td>
+              <td style="font-weight: 700;">10,000.00</td>
+              <td><span class="status-badge status-completed">COMPLETED</span></td>
+              <td><button class="btn-secondary-action" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;">View Details 🔍</button></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </section>
 
@@ -281,6 +352,293 @@
         </table>
       </div>
     </section>
+
+    <!-- VIEW 5: Account Info, Customizations & Preferences -->
+    <section id="view-account" class="view-section">
+      <div class="nexus-card">
+        <h2 class="nexus-title" style="margin-bottom: 1.5rem;">⚙️ Business Account & Taxpayer Profile</h2>
+        
+        <form id="account-form" onsubmit="saveAccountPreferences(event)">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Taxpayer Legal Name (الاسم القانوني)</label>
+              <input type="text" class="form-input" id="acc-legal-name" value="Nexus Egyptian Trading Co.">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Trade / Brand Name</label>
+              <input type="text" class="form-input" id="acc-trade-name" value="Nexus Wallet">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Egyptian TRN (9 Digits)</label>
+              <input type="text" class="form-input" id="acc-trn" value="123-456-789" readonly style="background: #f8fafc;">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Commercial Registry Number (السجل التجاري)</label>
+              <input type="text" class="form-input" id="acc-cr" value="CR-98421-EG">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Billing Email Address</label>
+              <input type="email" class="form-input" id="acc-email" value="finance@nexus-wallet.eg">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Contact Phone Number</label>
+              <input type="tel" class="form-input" id="acc-phone" value="+201001234567">
+            </div>
+          </div>
+
+          <h3 style="font-size: 1.05rem; font-weight: 700; margin: 1.5rem 0 1rem; border-top: 1px solid #e2e8f0; padding-top: 1.25rem;">
+            🎨 Customizations & Invoice Branding
+          </h3>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Default Egyptian VAT Rate</label>
+              <select class="form-select" id="acc-vat-rate">
+                <option value="0.14" selected>Standard VAT (14%)</option>
+                <option value="0.00">Exempt VAT (0%)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Invoice Output Language</label>
+              <select class="form-select" id="acc-language">
+                <option value="English" selected>English (en)</option>
+                <option value="Arabic">Arabic (ar - العربية)</option>
+                <option value="Bilingual">Bilingual (en / ar)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Primary Brand Theme Color</label>
+              <select class="form-select" id="acc-theme">
+                <option value="#1E293B" selected>Slate Black (#1E293B)</option>
+                <option value="#059669">Emerald Green (#059669)</option>
+                <option value="#2563EB">Egyptian Navy (#2563EB)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Base Currency</label>
+              <input type="text" class="form-input" value="EGP (Egyptian Pound)" readonly style="background: #f8fafc;">
+            </div>
+          </div>
+
+          <h3 style="font-size: 1.05rem; font-weight: 700; margin: 1.5rem 0 1rem; border-top: 1px solid #e2e8f0; padding-top: 1.25rem;">
+            🔔 Notification & Compliance Alert Preferences
+          </h3>
+
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">CBE Daily Limit Warning Banner</div>
+              <div class="toggle-sub">Notify when daily wallet deposit limit exceeds 75% usage</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="acc-cbe-alert" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">ETA Submission Failure Alerts</div>
+              <div class="toggle-sub">Send instant email notification if ETA API rejects document submission</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="acc-eta-alert" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">SMS E-Receipt Confirmations</div>
+              <div class="toggle-sub">Send customer SMS link upon successful B2C e-receipt issuance</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="acc-sms-alert">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
+            <button type="button" class="btn-secondary-action" onclick="switchTab('wallet')">Cancel</button>
+            <button type="submit" class="btn-primary-action" style="padding: 0.75rem 2rem;">Save Account Preferences</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- VIEW 6: Integrations & Webhooks Page -->
+    <section id="view-integrations" class="view-section">
+      <div class="nexus-card">
+        <h2 class="nexus-title" style="margin-bottom: 0.5rem;">🔌 System Integrations & ETA Gateway</h2>
+        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 1.5rem;">Configure ETA API credentials, ERP connectors, webhooks, and e-Seal certificates.</p>
+
+        <!-- ETA Official Gateway Integration Card -->
+        <div style="border: 1.5px solid #2563eb; background: #eff6ff; border-radius: 10px; padding: 1.5rem; margin-bottom: 2rem;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+            <div>
+              <span class="status-tag-connected" style="background: #2563eb; color: white;">🇪🇬 Official Gateway</span>
+              <h3 style="font-size: 1.15rem; font-weight: 800; margin-top: 0.5rem;">Egyptian Tax Authority (ETA) Portal</h3>
+              <p style="font-size: 0.85rem; color: #334155;">Direct submission pipeline for B2B e-Invoices and B2C e-Receipts v1.0</p>
+            </div>
+            <button class="btn-add-funds" style="background: #059669; font-size: 0.85rem; padding: 0.5rem 1rem;" onclick="testEtaConnection()">⚡ Test Connection</button>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Target ETA Environment</label>
+              <select class="form-select" id="int-eta-env">
+                <option value="Pre-Production Sandbox" selected>Pre-Production Sandbox (api.preprod.invoicing.eta.gov.eg)</option>
+                <option value="Production Live">Production Live (api.invoicing.eta.gov.eg)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Digital e-Seal Certificate Status</label>
+              <input type="text" class="form-input" value="Verified & Active (CAdES-BES / Soft Cert - Expires 14 Dec 2027)" readonly style="background: #ffffff; color: #059669; font-weight: 700;">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">ETA Client ID</label>
+              <input type="text" class="form-input" id="int-client-id" value="eta_client_sec_9984102">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">ETA Client Secret</label>
+              <input type="password" class="form-input" id="int-client-secret" value="secret_key_884910293">
+            </div>
+          </div>
+
+          <div id="test-connection-status" style="display: none; margin-top: 1rem; padding: 0.75rem 1rem; background: #dcfce7; border: 1px solid #86efac; border-radius: 6px; color: #15803d; font-weight: 600; font-size: 0.85rem;">
+          </div>
+        </div>
+
+        <!-- ERP & SaaS Connectors -->
+        <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem;">💼 Connected ERP & Frontend Applications</h3>
+
+        <div class="integration-card">
+          <div class="integration-info">
+            <div class="integration-icon">🎨</div>
+            <div>
+              <div class="integration-title">Appsmith Low-Code Dashboard</div>
+              <div class="integration-desc">Embedded UI Widget canvas for internal taxpayers & finance admins</div>
+            </div>
+          </div>
+          <span class="status-tag-connected">Connected ✅</span>
+        </div>
+
+        <div class="integration-card">
+          <div class="integration-info">
+            <div class="integration-icon">📦</div>
+            <div>
+              <div class="integration-title">Odoo ERP Connector</div>
+              <div class="integration-desc">Automated sales order & invoice sync with ETA compliance engine</div>
+            </div>
+          </div>
+          <span class="status-tag-connected">Connected ✅</span>
+        </div>
+
+        <div class="integration-card">
+          <div class="integration-info">
+            <div class="integration-icon">📊</div>
+            <div>
+              <div class="integration-title">QuickBooks Online / Xero</div>
+              <div class="integration-desc">Sync accounting ledger entries & tax clearance certificates</div>
+            </div>
+          </div>
+          <button class="btn-secondary-action" style="padding: 0.4rem 1rem; font-size: 0.8rem;" onclick="connectIntegration('QuickBooks')">Connect 🔌</button>
+        </div>
+
+        <!-- Developer API & Webhooks -->
+        <h3 style="font-size: 1.05rem; font-weight: 700; margin: 1.75rem 0 1rem;">🔑 Developer Webhooks & API Keys</h3>
+
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label class="form-label">Real-time Webhook Notification Endpoint URL</label>
+            <input type="url" class="form-input" id="int-webhook-url" value="https://api.nexus-wallet.eg/webhooks/eta/v1">
+          </div>
+
+          <div class="form-group full-width">
+            <label class="form-label">SaaS API Secret Key</label>
+            <div style="display: flex; gap: 0.5rem;">
+              <input type="text" class="form-input" value="nx_live_key_9841a0e7f229" readonly style="flex: 1; background: #f8fafc; font-family: var(--font-mono);">
+              <button class="btn-secondary-action" style="padding: 0.5rem 1rem; font-size: 0.85rem;" onclick="copyApiKey()">Copy Key</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end;">
+          <button class="btn-primary-action" style="padding: 0.75rem 2rem;" onclick="saveIntegrationConfig()">Save Integration Settings</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- INTERACTIVE TRANSACTION DETAIL POPUP MODAL -->
+  <div id="txn-detail-modal-overlay" class="detail-modal-bg" style="display: none;">
+    <div class="detail-modal-card">
+      <div class="detail-modal-header">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-size: 1.25rem;">📄</span>
+          <div>
+            <h3 style="font-size: 1.15rem; font-weight: 800;" id="dtl-ref-id">TXN-2026-001</h3>
+            <p style="font-size: 0.75rem; color: #64748b;" id="dtl-date">03 Aug 2026, 11:30 AM</p>
+          </div>
+        </div>
+        <button class="btn-close-x" onclick="closeTxnModal()">&times;</button>
+      </div>
+
+      <div style="border-bottom: 1px dashed #cbd5e1; padding-bottom: 1rem; margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <span style="font-size: 0.85rem; color: #64748b; font-weight: 600;">Payment Gateway / Channel:</span>
+          <span style="font-weight: 700;" id="dtl-channel">InstaPay Egypt</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <span style="font-size: 0.85rem; color: #64748b; font-weight: 600;">Gateway Ref Number:</span>
+          <span style="font-family: var(--font-mono); font-weight: 700;" id="dtl-ref-num">INSTA-99410-EG</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 0.85rem; color: #64748b; font-weight: 600;">CBE Status:</span>
+          <span class="status-badge status-completed" id="dtl-status-badge">COMPLETED</span>
+        </div>
+      </div>
+
+      <!-- Amount Breakdown -->
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem; font-size: 0.9rem;">
+          <span>Deposit Amount:</span>
+          <span style="font-weight: 700;" id="dtl-amount">20,000.00 EGP</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem; font-size: 0.85rem; color: #64748b;">
+          <span>Processing Fee:</span>
+          <span id="dtl-fee">0.00 EGP</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem; font-size: 0.85rem; color: #64748b;">
+          <span>14% Egyptian VAT:</span>
+          <span id="dtl-vat">0.00 EGP</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-top: 1px solid #cbd5e1; padding-top: 0.5rem; font-size: 1.05rem; font-weight: 800;">
+          <span>Net Wallet Credit:</span>
+          <span style="color: #059669;" id="dtl-total">+20,000.00 EGP</span>
+        </div>
+      </div>
+
+      <!-- CBE Impact / Failure Details -->
+      <div id="dtl-cbe-impact-box" style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 0.75rem 1rem; font-size: 0.85rem; color: #1e40af; margin-bottom: 1.25rem;">
+        ℹ️ <strong>CBE Limit Audit:</strong> <span id="dtl-cbe-text">Updated Daily Used: 20,000 / 60,000 EGP</span>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+        <button class="btn-secondary-action" onclick="closeTxnModal()">Close</button>
+        <button class="btn-primary-action" onclick="switchTab('receipt')">View Official ETA Receipt</button>
+      </div>
+    </div>
   </div>
 
   <script src="app.js"></script>

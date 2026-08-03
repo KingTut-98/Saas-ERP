@@ -68,15 +68,16 @@ body {
 
 .nav-tabs {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.25rem;
   background: #f1f5f9;
   padding: 0.25rem;
   border-radius: 8px;
+  flex-wrap: wrap;
 }
 
 .tab-btn {
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.8rem;
   font-weight: 600;
   border: none;
   background: transparent;
@@ -588,6 +589,75 @@ body {
   cursor: pointer;
 }
 
+/* Line Item Transactions Table */
+.txn-row-clickable {
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.txn-row-clickable:hover {
+  background: #f8fafc;
+}
+
+.status-completed {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.status-exceeded {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status-pending {
+  background: #fef9c3;
+  color: #a16207;
+}
+
+/* Transaction Details Popup Modal */
+.detail-modal-bg {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.detail-modal-card {
+  background: #ffffff;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 580px;
+  padding: 2rem;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15);
+  animation: modalFadeIn 0.2s ease;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.detail-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.btn-close-x {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #64748b;
+}
+
 /* Feed Section */
 .feed-card {
   background: var(--card-bg);
@@ -614,19 +684,143 @@ body {
   border-bottom: 1px solid var(--border-light);
 }
 
-.status-badge {
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
+/* Form & Settings Styling */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form-group.full-width {
+  grid-column: span 2;
+}
+
+.form-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.form-input, .form-select {
+  padding: 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  color: #0f172a;
+}
+
+.toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.toggle-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.toggle-sub {
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #cbd5e1;
+  transition: .3s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #2563eb;
+}
+
+input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+/* Integrations Grid */
+.integration-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.integration-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.integration-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+}
+
+.integration-title {
+  font-size: 0.95rem;
   font-weight: 700;
 }
 
-.status-valid {
-  background: #dcfce7;
-  color: #15803d;
+.integration-desc {
+  font-size: 0.8rem;
+  color: #64748b;
 }
 
-.status-queued {
-  background: #fef9c3;
-  color: #a16207;
+.status-tag-connected {
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
 }
