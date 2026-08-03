@@ -31,7 +31,7 @@ gcloud artifacts repositories create "$REPOSITORY" \
 
 # 4. Build & Deploy Backend
 echo "⚡ Deploying Backend GraphQL Server to Cloud Run..."
-cd backend
+pushd backend
 gcloud builds submit --tag "$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/backend:latest" .
 gcloud run deploy saas-erp-backend \
     --image="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/backend:latest" \
@@ -40,6 +40,18 @@ gcloud run deploy saas-erp-backend \
     --allow-unauthenticated \
     --port=4000 \
     --set-env-vars="ETA_API_BASE_URL=https://api.preprod.invoicing.eta.gov.eg"
-cd ..
+popd
+
+# 5. Build & Deploy Frontend
+echo "🌐 Deploying Frontend Web App to Cloud Run..."
+pushd frontend
+gcloud builds submit --tag "$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/frontend:latest" .
+gcloud run deploy saas-erp-frontend \
+    --image="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/frontend:latest" \
+    --platform=managed \
+    --region="$REGION" \
+    --allow-unauthenticated \
+    --port=80
+popd
 
 echo "✅ GCP Deployment script complete!"
