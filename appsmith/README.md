@@ -1,73 +1,105 @@
-# Appsmith Setup & Dashboard Import Guide
+# 🇪🇬 Appsmith Setup & ETA Compliance Dashboard Guide
 
-This guide walks you through setting up **Appsmith**, importing the **ETA E-Invoicing & Compliance Dashboard** (`eta_dashboard.json`), and connecting it to your GraphQL backend and PostgreSQL database.
+This guide walks you through setting up and importing the **ETA E-Invoicing & CBE Compliance SaaS Portal** into **Appsmith**, connecting it to the GraphQL backend (`http://localhost:4000/graphql`) and PostgreSQL database (`saas_erp_db`).
 
 ---
 
-## 🚀 1. Launching Appsmith via Docker Compose
+## 🚀 1. Quick Start via Docker Compose
 
-Run the following command in the root folder (`d:\Saas Fintech`):
+Run the following command from the project root (`d:\Saas Fintech`):
 
 ```bash
 docker-compose up -d
 ```
 
-This starts:
-- **Appsmith**: Available at `http://localhost:8000`
-- **Frontend Dashboard**: Available at `http://localhost:8080`
-- **Backend GraphQL Server**: Available at `http://localhost:4000/graphql`
-- **PostgreSQL / Supabase Database**: Available at `localhost:5432`
+### Access Ports & Services
+| Service | Endpoint | Description |
+| :--- | :--- | :--- |
+| **Appsmith Editor** | `http://localhost:8000` | Appsmith Admin & Dashboard UI |
+| **Frontend Web App** | `http://localhost:8080` | React / Vite Client Application |
+| **Backend GraphQL Server** | `http://localhost:4000/graphql` | GraphQL Schema & Business Logic |
+| **PostgreSQL Database** | `localhost:5432` | Supabase / PostgreSQL DB (`saas_erp_db`) |
 
 ---
 
-## 📥 2. Importing `eta_dashboard.json` into Appsmith
+## 📥 2. Importing the Project into Appsmith
 
-1. Open your browser and go to `http://localhost:8000`.
-2. Follow the prompt to complete the initial setup / administrator account creation.
-3. In the Appsmith workspace home screen, click **"Create New"** -> **"Import"** (or click **"Import"** on an existing application space).
-4. Select **"Upload JSON file"** and choose:
-   `d:\Saas Fintech\appsmith\eta_dashboard.json`
-5. Click **Import**. Appsmith will automatically construct the complete dashboard UI with widgets, tables, form controls, and pre-configured queries.
+Appsmith provides two import options:
 
----
+### Option A: Import Full Application (`appsmith_application.json` - Recommended)
+1. Open your browser at `http://localhost:8000`.
+2. On your workspace home screen, click **"Create New"** -> **"Import"**.
+3. Select **"Upload JSON file"** and choose:
+   `d:\Saas Fintech\appsmith\appsmith_application.json`
+4. Appsmith will automatically import:
+   - **Page Layout**: Canvas, header banner, CBE limit meter, TRN validator, and status feed.
+   - **Datasources**: Pre-configured `GraphQL_Backend_DS` and `PostgreSQL_Database_DS`.
+   - **Queries & Mutations**: `GetWalletDetails`, `ValidateTRN`, `GetInvoiceFeed`, `ProcessWalletDeposit`, `SubmitInvoiceToETA`.
+   - **JSObjects**: `JSUtils` for currency and TRN formatting.
 
-## 🔗 3. Configuring Datasources
-
-### Option A: Direct GraphQL Backend Connection (Recommended)
-1. Inside Appsmith editor, open **Datasources** on the left panel.
-2. Click **Create New Datasource** -> Select **GraphQL**.
-3. Set the **URL** to:
-   - If running inside Docker container: `http://backend:4000/graphql`
-   - If running outside Docker: `http://localhost:4000/graphql`
-4. Set **Header**:
-   - Key: `Content-Type` | Value: `application/json`
-5. Test the connection and click **Save**.
-
-### Option B: Direct PostgreSQL / Supabase Connection
-1. In Datasources, click **Create New Datasource** -> Select **PostgreSQL**.
-2. Connection Settings:
-   - **Host Address**: `postgres` (inside Docker) or `localhost` (outside Docker)
-   - **Port**: `5432`
-   - **Database Name**: `saas_erp_db`
-   - **Username**: `postgres`
-   - **Password**: `postgrespassword`
-3. Click **Test** and **Save**.
+### Option B: Import Page JSON (`eta_dashboard.json`)
+1. Create a blank app in Appsmith.
+2. In the left panel, click on **Pages** -> **Import Page**.
+3. Upload `d:\Saas Fintech\appsmith\eta_dashboard.json`.
 
 ---
 
-## 🧪 4. Testing Dashboard Functionality
+## 🎨 3. Dashboard UI Components & Controls Map
 
-Once imported and connected, test the following key compliance features:
+All tables, inputs, buttons, and status indicators follow strict Appsmith best practices and clear labeling:
 
-1. **Egyptian TRN Validation (الرقم الضريبي)**:
-   - Enter a 9-digit TRN (e.g. `123456789` or `123-456-789`). Observe real-time validation success banner.
-   - Enter an invalid number (e.g. `12345`). Observe error status message.
+### 1. Header Banner (`cnt_header`)
+- **Title**: `🇪🇬 ETA E-Invoicing & Compliance SaaS Portal`
+- **Subtitle**: `Central Bank of Egypt (CBE) Wallet Cap Enforcement & Tax Authority v1.0 Integration`
+- **Buttons**:
+  - `+ New Wallet Deposit` (Green primary button -> opens `mdl_create_deposit`)
+  - `⚡ Upgrade Tier` (Blue button -> opens `mdl_tier_upgrade`)
 
-2. **CBE Wallet Deposit Cap Enforcement**:
-   - Tier 1 Daily Cap is **60,000.00 EGP** (Current used: **45,000.00 EGP**, Remaining: **15,000.00 EGP**).
-   - Try depositing **10,000.00 EGP**: Process completes, balance updates to **134,500.00 EGP**.
-   - Try depositing **25,000.00 EGP**: Triggers `DAILY_LIMIT_EXCEEDED` exception modal offering Tier 2 upgrade options.
+### 2. Financial Controls & CBE Deposit Limit Meter (`cnt_deposit_meter`)
+- **Stat Boxes**:
+  - `Available Balance`: Formatted as `124,500.00 EGP`
+  - `Daily CBE Used`: `45,000.00 / 60,000.00 EGP` (Tier 1 Limit)
+  - `Monthly CBE Used`: `110,000.00 / 200,000.00 EGP`
+- **Progress Bar**: `progress_daily_cbe` displaying daily limit percentage with color thresholds (Blue -> Amber -> Red).
 
-3. **ETA Canonicalization & E-Receipt Verification**:
-   - Inspect the Invoices table fed by `getInvoiceFeed`.
-   - Click **"Submit to ETA Portal"** on `INV-2026-003` to trigger canonical JSON hashing and generation of the Base64 QR code link (`https://invoicing.eta.gov.eg/receipts/search/{etaUuid}`).
+### 3. Egyptian Taxpayer TRN Lookup & Validator (`cnt_trn_lookup`)
+- **Input Field**: `inp_trn_search` (Label: `"Egyptian Tax Registration Number (TRN)"`, Regex: `^[0-9]{3}-?[0-9]{3}-?[0-9]{3}$`)
+- **Button**: `btn_validate_trn` (Label: `"Verify TRN with ETA"`, triggers `ValidateTRN` query)
+- **Status Card**: Dynamic legal status feedback card.
+
+### 4. ETA v1.0 Invoice Submission Feed Table (`tbl_invoices`)
+- **Table Columns & Header Labels**:
+  - `Invoice ID` (`internalId`)
+  - `Receiver Legal Name` (`receiverName`)
+  - `Receiver TRN` (`receiverTrn`)
+  - `Type` (`documentType`)
+  - `Net Amount (EGP)` (`netAmountEgp`)
+  - `VAT 14% (EGP)` (`taxAmountVatEgp`)
+  - `Total Amount (EGP)` (`totalAmountEgp`)
+  - `ETA Status` (`status` - Badges: `VALID` [Green], `QUEUED` [Orange], `DRAFT` [Gray])
+- **Custom Button Action Columns**:
+  - `Submit to ETA Portal` (Triggers `SubmitInvoiceToETA` GraphQL mutation)
+  - `View Hash & QR` (Opens compliance receipt modal `mdl_invoice_details`)
+
+### 5. Interactive Compliance Modals
+- `mdl_create_deposit`: Form modal for entering EGP deposit amount, payment channel (InstaPay, Fawry, Bank Transfer, Vodafone Cash), and reference number.
+- `mdl_limit_exceeded`: Warning modal when deposit exceeds 60,000 EGP daily limit, offering Tier 2 SME upgrade options.
+- `mdl_tier_upgrade`: Form for submitting Commercial Registry Number (السجل التجاري) to unlock 500,000 EGP/day cap.
+- `mdl_invoice_details`: Pop-up showing canonical SHA-256 hash string and direct ETA portal QR verification link.
+
+---
+
+## 🧪 4. Step-by-Step Validation Scenarios
+
+1. **TRN 9-Digit Validation Test**:
+   - Enter `123456789` -> Validation Card shows `✅ Valid 9-digit Egyptian TRN format`.
+   - Enter `12345` -> Validation Card shows `❌ Invalid TRN length (Must be 9 digits)`.
+
+2. **CBE Deposit Cap Enforcement Test**:
+   - Deposit `10,000.00 EGP` via `InstaPay` -> Balance increases to `134,500.00 EGP`, Daily used becomes `55,000.00 EGP`.
+   - Deposit `25,000.00 EGP` -> Triggers `mdl_limit_exceeded` warning modal due to Tier 1 daily cap violation (60,000 EGP max).
+
+3. **ETA E-Receipt Submission Test**:
+   - In `tbl_invoices`, click **"Submit to ETA Portal"** on queued invoice `INV-2026-003`.
+   - Status updates from `QUEUED` to `VALID`, generating an official ETA UUID, canonical SHA-256 hash, and Base64 QR Code URL.
+   - Click **"View Hash & QR"** to view receipt details and open the ETA portal link.

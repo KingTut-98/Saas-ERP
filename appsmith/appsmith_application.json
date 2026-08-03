@@ -1,0 +1,110 @@
+{
+  "application": {
+    "name": "ETA E-Invoicing & Compliance SaaS Portal",
+    "icon": "file-text",
+    "color": "#0F172A",
+    "pages": [
+      {
+        "id": "page_eta_dashboard_001",
+        "name": "ETA E-Invoicing & Compliance Portal",
+        "isDefault": true
+      }
+    ]
+  },
+  "datasources": [
+    {
+      "name": "GraphQL_Backend_DS",
+      "pluginId": "graphql-plugin",
+      "datasourceConfiguration": {
+        "url": "http://backend:4000/graphql",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PostgreSQL_Database_DS",
+      "pluginId": "postgres-plugin",
+      "datasourceConfiguration": {
+        "connection": {
+          "mode": "READ_WRITE",
+          "host": "postgres",
+          "port": "5432",
+          "databaseName": "saas_erp_db",
+          "username": "postgres",
+          "password": "postgrespassword"
+        }
+      }
+    }
+  ],
+  "unpublishedActionList": [
+    {
+      "name": "GetWalletDetails",
+      "pageId": "page_eta_dashboard_001",
+      "datasource": {
+        "name": "GraphQL_Backend_DS"
+      },
+      "actionConfiguration": {
+        "httpMethod": "POST",
+        "body": "query GetWalletDetails {\n  getWalletDetails {\n    id\n    taxpayerId\n    currency\n    balanceEgp\n    dailyUsedEgp\n    monthlyUsedEgp\n    dailyLimitCapEgp\n    monthlyLimitCapEgp\n    dailyProgressPercent\n    monthlyProgressPercent\n    tierLevel\n  }\n}"
+      }
+    },
+    {
+      "name": "ValidateTRN",
+      "pageId": "page_eta_dashboard_001",
+      "datasource": {
+        "name": "GraphQL_Backend_DS"
+      },
+      "actionConfiguration": {
+        "httpMethod": "POST",
+        "body": "query ValidateTRN($trn: String!) {\n  validateTRN(trn: $trn) {\n    trn\n    isValid\n    formattedTrn\n    message\n  }\n}",
+        "formData": {
+          "variables": "{\n  \"trn\": \"{{inp_trn_search.text}}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "GetInvoiceFeed",
+      "pageId": "page_eta_dashboard_001",
+      "datasource": {
+        "name": "GraphQL_Backend_DS"
+      },
+      "actionConfiguration": {
+        "httpMethod": "POST",
+        "body": "query GetInvoiceFeed {\n  getInvoiceFeed {\n    id\n    internalId\n    issuerTrn\n    receiverName\n    receiverTrn\n    documentType\n    netAmountEgp\n    taxAmountVatEgp\n    totalAmountEgp\n    status\n    etaUuid\n    qrCodeUrl\n    canonicalHash\n    createdAt\n  }\n}"
+      }
+    },
+    {
+      "name": "ProcessWalletDeposit",
+      "pageId": "page_eta_dashboard_001",
+      "datasource": {
+        "name": "GraphQL_Backend_DS"
+      },
+      "actionConfiguration": {
+        "httpMethod": "POST",
+        "body": "mutation ProcessWalletDeposit($amount: Float!, $channel: String!, $referenceNumber: String) {\n  processWalletDeposit(amount: $amount, channel: $channel, referenceNumber: $referenceNumber) {\n    success\n    code\n    transactionId\n    newBalance\n    dailyUsedEgp\n    monthlyUsedEgp\n    attemptedAmount\n    remainingDailyAllowance\n    dailyCap\n    tierLevel\n    message\n  }\n}"
+      }
+    },
+    {
+      "name": "SubmitInvoiceToETA",
+      "pageId": "page_eta_dashboard_001",
+      "datasource": {
+        "name": "GraphQL_Backend_DS"
+      },
+      "actionConfiguration": {
+        "httpMethod": "POST",
+        "body": "mutation SubmitInvoiceToETA($invoiceId: String!, $format: String) {\n  submitInvoiceToETA(invoiceId: $invoiceId, format: $format) {\n    success\n    etaUuid\n    submissionId\n    canonicalHash\n    qrCodeUrl\n    status\n    errors\n    submittedAt\n  }\n}"
+      }
+    }
+  ],
+  "actionCollections": [
+    {
+      "name": "JSUtils",
+      "pageId": "page_eta_dashboard_001",
+      "body": "export default {\n  formatCurrency: (amount) => {\n    if (amount === undefined || amount === null) return '0.00 EGP';\n    return Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' EGP';\n  },\n  formatTRN: (trn) => {\n    if (!trn) return '';\n    const digits = trn.replace(/[^0-9]/g, '');\n    if (digits.length === 9) {\n      return `${digits.slice(0,3)}-${digits.slice(3,6)}-${digits.slice(6,9)}`;\n    }\n    return trn;\n  },\n  calculateDailyProgress: (used, cap) => {\n    if (!cap || cap === 0) return 0;\n    return Math.min(100, (used / cap) * 100);\n  }\n}"
+    }
+  ]
+}
