@@ -1,0 +1,262 @@
+{
+  "schemaVersion": 7,
+  "pageWithMigratedDsl": {
+    "page": {
+      "id": "page_eta_dashboard_001",
+      "name": "ETA E-Invoicing User Dashboard",
+      "slug": "eta-einvoicing-dashboard",
+      "isDefault": true,
+      "layouts": [
+        {
+          "viewMode": false,
+          "dsl": {
+            "widgetName": "MainContainer",
+            "type": "CANVAS_WIDGET",
+            "widgetId": "0",
+            "topRow": 0,
+            "bottomRow": 1200,
+            "leftColumn": 0,
+            "rightColumn": 64,
+            "containerStyle": "none",
+            "detachFromLayout": true,
+            "canExtend": true,
+            "minHeight": 1200,
+            "children": [
+              {
+                "widgetName": "cnt_header",
+                "type": "CONTAINER_WIDGET",
+                "widgetId": "w_header_cnt",
+                "topRow": 0,
+                "bottomRow": 7,
+                "leftColumn": 0,
+                "rightColumn": 64,
+                "backgroundColor": "#1E293B",
+                "borderRadius": "0.375rem",
+                "children": [
+                  {
+                    "widgetName": "txt_header_title",
+                    "type": "TEXT_WIDGET",
+                    "widgetId": "w_header_txt",
+                    "topRow": 1,
+                    "bottomRow": 5,
+                    "leftColumn": 2,
+                    "rightColumn": 40,
+                    "text": "🇪🇬 ETA E-Invoicing & Compliance SaaS MVP | User Dashboard",
+                    "fontSize": "1.5rem",
+                    "fontStyle": "BOLD",
+                    "textColor": "#FFFFFF"
+                  },
+                  {
+                    "widgetName": "btn_open_deposit_modal",
+                    "type": "BUTTON_WIDGET",
+                    "widgetId": "w_btn_open_dep",
+                    "topRow": 1,
+                    "bottomRow": 5,
+                    "leftColumn": 48,
+                    "rightColumn": 62,
+                    "text": "+ New Wallet Deposit",
+                    "buttonColor": "#059669",
+                    "onClick": "{{showModal('mdl_create_deposit')}}"
+                  }
+                ]
+              },
+              {
+                "widgetName": "cnt_deposit_meter",
+                "type": "CONTAINER_WIDGET",
+                "widgetId": "w_dep_meter_cnt",
+                "topRow": 9,
+                "bottomRow": 27,
+                "leftColumn": 0,
+                "rightColumn": 32,
+                "backgroundColor": "#FFFFFF",
+                "borderColor": "#E2E8F0",
+                "borderWidth": 1,
+                "borderRadius": "0.375rem",
+                "children": [
+                  {
+                    "widgetName": "txt_meter_title",
+                    "type": "TEXT_WIDGET",
+                    "widgetId": "w_meter_title",
+                    "topRow": 1,
+                    "bottomRow": 3,
+                    "leftColumn": 2,
+                    "rightColumn": 30,
+                    "text": "💳 Wallet Balance & CBE Limit Meter (EGP)",
+                    "fontSize": "1.125rem",
+                    "fontStyle": "BOLD",
+                    "textColor": "#1E293B"
+                  },
+                  {
+                    "widgetName": "stat_current_balance",
+                    "type": "STAT_BOX_WIDGET",
+                    "widgetId": "w_stat_bal",
+                    "topRow": 4,
+                    "bottomRow": 10,
+                    "leftColumn": 2,
+                    "rightColumn": 15,
+                    "label": "Available Balance",
+                    "value": "{{GetAccountLimitsAndUsage.data.balanceEgp || '124,500.00'}} EGP",
+                    "subText": "Asset Wallet Account"
+                  },
+                  {
+                    "widgetName": "stat_daily_usage",
+                    "type": "STAT_BOX_WIDGET",
+                    "widgetId": "w_stat_daily",
+                    "topRow": 4,
+                    "bottomRow": 10,
+                    "leftColumn": 16,
+                    "rightColumn": 30,
+                    "label": "Daily CBE Used",
+                    "value": "{{GetAccountLimitsAndUsage.data.dailyUsedEgp || '45,000.00'}} / 60,000.00 EGP",
+                    "subText": "Cap reset daily 00:00 Cairo time"
+                  },
+                  {
+                    "widgetName": "progress_daily_cbe",
+                    "type": "PROGRESS_WIDGET",
+                    "widgetId": "w_prog_daily",
+                    "topRow": 11,
+                    "bottomRow": 14,
+                    "leftColumn": 2,
+                    "rightColumn": 30,
+                    "progress": "{{((GetAccountLimitsAndUsage.data.dailyUsedEgp || 45000) / 60000) * 100}}",
+                    "counterClockwise": false,
+                    "showResult": true,
+                    "fillColor": "#2563EB"
+                  },
+                  {
+                    "widgetName": "txt_cbe_status_note",
+                    "type": "TEXT_WIDGET",
+                    "widgetId": "w_cbe_note",
+                    "topRow": 14,
+                    "bottomRow": 16,
+                    "leftColumn": 2,
+                    "rightColumn": 30,
+                    "text": "ℹ️ Central Bank of Egypt (CBE) Tier 1 Cap: Max 60,000 EGP/day & 200,000 EGP/month.",
+                    "fontSize": "0.75rem",
+                    "textColor": "#64748B"
+                  }
+                ]
+              },
+              {
+                "widgetName": "cnt_trn_lookup",
+                "type": "CONTAINER_WIDGET",
+                "widgetId": "w_trn_lookup_cnt",
+                "topRow": 9,
+                "bottomRow": 27,
+                "leftColumn": 33,
+                "rightColumn": 64,
+                "backgroundColor": "#FFFFFF",
+                "borderColor": "#E2E8F0",
+                "borderWidth": 1,
+                "borderRadius": "0.375rem",
+                "children": [
+                  {
+                    "widgetName": "txt_trn_title",
+                    "type": "TEXT_WIDGET",
+                    "widgetId": "w_trn_title",
+                    "topRow": 1,
+                    "bottomRow": 3,
+                    "leftColumn": 2,
+                    "rightColumn": 30,
+                    "text": "🔍 Taxpayer TRN Lookup & Validator (الرقم الضريبي)",
+                    "fontSize": "1.125rem",
+                    "fontStyle": "BOLD",
+                    "textColor": "#1E293B"
+                  },
+                  {
+                    "widgetName": "inp_trn_search",
+                    "type": "INPUT_WIDGET_V2",
+                    "widgetId": "w_inp_trn",
+                    "topRow": 4,
+                    "bottomRow": 9,
+                    "leftColumn": 2,
+                    "rightColumn": 20,
+                    "label": "Enter 9-Digit Egyptian TRN",
+                    "placeholder": "e.g., 123456789 or 123-456-789",
+                    "regex": "^[0-9]{3}-?[0-9]{3}-?[0-9]{3}$",
+                    "errorMessage": "TRN must contain strictly 9 digits."
+                  },
+                  {
+                    "widgetName": "btn_validate_trn",
+                    "type": "BUTTON_WIDGET",
+                    "widgetId": "w_btn_val_trn",
+                    "topRow": 5,
+                    "bottomRow": 9,
+                    "leftColumn": 21,
+                    "rightColumn": 29,
+                    "text": "Verify TRN",
+                    "buttonColor": "#2563EB",
+                    "onClick": "{{Query_ValidateTRN.run()}}"
+                  },
+                  {
+                    "widgetName": "txt_trn_result",
+                    "type": "TEXT_WIDGET",
+                    "widgetId": "w_txt_trn_res",
+                    "topRow": 10,
+                    "bottomRow": 16,
+                    "leftColumn": 2,
+                    "rightColumn": 30,
+                    "text": "{{\"Validation Status: \" + (inp_trn_search.text.replace(/[^0-9]/g, '').length === 9 ? '✅ Valid 9-digit Egyptian TRN format' : '❌ Invalid TRN length (Must be 9 digits)')}}",
+                    "fontSize": "0.875rem",
+                    "fontStyle": "BOLD",
+                    "textColor": "{{inp_trn_search.text.replace(/[^0-9]/g, '').length === 9 ? '#059669' : '#DC2626'}}"
+                  }
+                ]
+              },
+              {
+                "widgetName": "cnt_invoice_feed",
+                "type": "CONTAINER_WIDGET",
+                "widgetId": "w_inv_feed_cnt",
+                "topRow": 29,
+                "bottomRow": 65,
+                "leftColumn": 0,
+                "rightColumn": 64,
+                "backgroundColor": "#FFFFFF",
+                "borderColor": "#E2E8F0",
+                "borderWidth": 1,
+                "borderRadius": "0.375rem",
+                "children": [
+                  {
+                    "widgetName": "txt_invoice_table_title",
+                    "type": "TEXT_WIDGET",
+                    "widgetId": "w_inv_tbl_title",
+                    "topRow": 1,
+                    "bottomRow": 3,
+                    "leftColumn": 2,
+                    "rightColumn": 30,
+                    "text": "📄 ETA v1.0 Invoice Submission Status Feed",
+                    "fontSize": "1.125rem",
+                    "fontStyle": "BOLD",
+                    "textColor": "#1E293B"
+                  },
+                  {
+                    "widgetName": "btn_refresh_invoices",
+                    "type": "BUTTON_WIDGET",
+                    "widgetId": "w_btn_ref_inv",
+                    "topRow": 1,
+                    "bottomRow": 3,
+                    "leftColumn": 52,
+                    "rightColumn": 62,
+                    "text": "🔄 Refresh Feed",
+                    "buttonColor": "#475569",
+                    "onClick": "{{GetInvoiceFeed.run()}}"
+                  },
+                  {
+                    "widgetName": "tbl_invoices",
+                    "type": "TABLE_WIDGET_V2",
+                    "widgetId": "w_tbl_inv",
+                    "topRow": 4,
+                    "bottomRow": 34,
+                    "leftColumn": 2,
+                    "rightColumn": 62,
+                    "tableData": "{{GetInvoiceFeed.data || [\n  {'id': 'inv-001', 'internalId': 'INV-2026-001', 'receiverName': 'Cairo Retail Supplying Co.', 'receiverTrn': '987654321', 'netAmountEgp': 10000.00, 'taxAmountVatEgp': 1400.00, 'totalAmountEgp': 11400.00, 'status': 'VALID', 'etaUuid': 'ETA-3F9A-412C', 'qrCodeUrl': 'https://invoicing.eta.gov.eg/receipts/search/ETA-3F9A-412C'},\n  {'id': 'inv-002', 'internalId': 'INV-2026-002', 'receiverName': 'Alexandria Logistics Ltd', 'receiverTrn': '456789123', 'netAmountEgp': 25000.00, 'taxAmountVatEgp': 3500.00, 'totalAmountEgp': 28500.00, 'status': 'QUEUED', 'etaUuid': null, 'qrCodeUrl': null}\n]}}"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
